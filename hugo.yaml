@@ -88,6 +88,7 @@ params:
       stage: 3218181
     google: GTM-WL2QLG5
     onetrust: 8e0ebfd9-035d-4ec2-9b2f-a2de9c09f906
+    vwo: 723167
   algolia:
     appid: 3XRLW0LZH9
     apikey: 2899036ce47dba191b8dc1758e4bc6a4
@@ -96,12 +97,12 @@ params:
   repo: https://github.com/docker/docs
   docs_url: https://docs.docker.com
 
-  latest_engine_api_version: "1.45"
-  docker_ce_version: "26.1.4"
-  compose_version: "v2.28.0"
+  latest_engine_api_version: "1.46"
+  docker_ce_version: "27.0.2"
+  compose_version: "v2.28.1"
   compose_file_v3: "3.8"
   compose_file_v2: "2.4"
-  buildkit_version: "0.13.1"
+  buildkit_version: "0.14.1"
 
   example_go_version: "1.21"
   example_golangci_lint_version: "v1.52"
