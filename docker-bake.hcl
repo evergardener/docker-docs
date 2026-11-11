@@ -1,16 +1,21 @@
 variable "HUGO_ENV" {
-  default = "development"
+  default = null
 }
 
 variable "DOCS_URL" {
-  default = "https://docs.docker.com"
+  default = null
 }
 
 variable "DOCS_SITE_DIR" {
   default = "public"
 }
-variable "DOCS_ENFORCE_GIT_LOG_HISTORY" {
-  default = "0"
+
+variable "DRY_RUN" {
+  default = null
+}
+
+variable "GITHUB_ACTIONS" {
+  default = null
 }
 
 group "default" {
@@ -21,6 +26,7 @@ target "index" {
   # generate a new local search index
   target = "index"
   output = ["type=local,dest=static/pagefind"]
+  provenance = false
 }
 
 target "release" {
@@ -30,68 +36,67 @@ target "release" {
   }
   target = "release"
   output = [DOCS_SITE_DIR]
+  provenance = false
 }
 
 group "validate" {
-  targets = ["lint", "test", "unused-media"]
+  targets = ["lint", "test", "unused-media", "test-go-redirects", "dockerfile-lint", "validate-vendor", "validate-api-reference"]
 }
 
 target "test" {
   target = "test"
   output = ["type=cacheonly"]
+  provenance = false
 }
 
 target "lint" {
   target = "lint"
   output = ["type=cacheonly"]
+  provenance = false
+}
+
+target "vale" {
+  target = "vale"
+  args = {
+    GITHUB_ACTIONS = GITHUB_ACTIONS
+  }
+  output = ["./tmp"]
+  provenance = false
 }
 
 target "unused-media" {
   target = "unused-media"
   output = ["type=cacheonly"]
+  provenance = false
+}
+
+target "test-go-redirects" {
+  target = "test-go-redirects"
+  output = ["type=cacheonly"]
+  provenance = false
+}
+
+target "releaser-test" {
+  context = "hack/releaser"
+  target = "releaser-test"
+  output = ["type=cacheonly"]
+  provenance = false
+}
+
+target "dockerfile-lint" {
+  call = "check"
 }
 
 #
-# releaser targets are defined in _releaser/Dockerfile
-# and are used for Netlify and AWS S3 deployment
+# releaser targets are defined in hack/releaser/Dockerfile
+# and are used for AWS S3 deployment
 #
 
 target "releaser-build" {
-  context = "_releaser"
+  context = "hack/releaser"
   target = "releaser"
   output = ["type=cacheonly"]
-}
-
-variable "NETLIFY_SITE_NAME" {
-  default = ""
-}
-
-target "_common-netlify" {
-  args = {
-    NETLIFY_SITE_NAME = NETLIFY_SITE_NAME
-  }
-  secret = [
-    "id=NETLIFY_AUTH_TOKEN,env=NETLIFY_AUTH_TOKEN"
-  ]
-}
-
-target "netlify-remove" {
-  inherits = ["_common-netlify"]
-  context = "_releaser"
-  target = "netlify-remove"
-  no-cache-filter = ["netlify-remove"]
-  output = ["type=cacheonly"]
-}
-
-target "netlify-deploy" {
-  inherits = ["_common-netlify"]
-  context = "_releaser"
-  target = "netlify-deploy"
-  contexts = {
-    sitedir = DOCS_SITE_DIR
-  }
-  no-cache-filter = ["netlify-deploy"]
-  output = ["type=cacheonly"]
+  provenance = false
 }
 
 variable "AWS_REGION" {
@@ -112,6 +117,7 @@ variable "AWS_LAMBDA_FUNCTION" {
 
 target "_common-aws" {
   args = {
+    DRY_RUN = DRY_RUN
     AWS_REGION = AWS_REGION
     AWS_S3_BUCKET = AWS_S3_BUCKET
     AWS_S3_CONFIG = AWS_S3_CONFIG
@@ -123,19 +129,12 @@ target "_common-aws" {
     "id=AWS_SECRET_ACCESS_KEY,env=AWS_SECRET_ACCESS_KEY",
     "id=AWS_SESSION_TOKEN,env=AWS_SESSION_TOKEN"
   ]
-}
-
-target "aws-s3-update-config" {
-  inherits = ["_common-aws"]
-  context = "_releaser"
-  target = "aws-s3-update-config"
-  no-cache-filter = ["aws-update-config"]
-  output = ["type=cacheonly"]
+  provenance = false
 }
 
 target "aws-lambda-invoke" {
   inherits = ["_common-aws"]
-  context = "_releaser"
+  context = "hack/releaser"
   target = "aws-lambda-invoke"
   no-cache-filter = ["aws-lambda-invoke"]
   output = ["type=cacheonly"]
@@ -143,7 +142,7 @@ target "aws-lambda-invoke" {
 
 target "aws-cloudfront-update" {
   inherits = ["_common-aws"]
-  context = "_releaser"
+  context = "hack/releaser"
   target = "aws-cloudfront-update"
   contexts = {
     sitedir = DOCS_SITE_DIR
@@ -162,6 +161,18 @@ target "vendor" {
     MODULE = VENDOR_MODULE
   }
   output = ["."]
+  provenance = false
+}
+
+target "validate-vendor" {
+  target = "validate-vendor"
+  output = ["type=cacheonly"]
+}
+
+target "validate-api-reference" {
+  target = "validate-api-reference"
+  output = ["type=cacheonly"]
+  provenance = false
 }
 
 variable "UPSTREAM_MODULE_NAME" {
@@ -182,4 +193,5 @@ target "validate-upstream" {
   }
   target = "validate-upstream"
   output = ["type=cacheonly"]
+  provenance = false
 }

@@ -3,27 +3,50 @@
 
 # For more details, see https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
-/content/build/ @crazy-max @dvdksn
+/content/manuals/build/ @dvdksn
 
-/content/compose/ @aevesdocker
+/content/manuals/build-cloud/ @craig-osterhout
 
-/content/desktop/ @aevesdocker
+/content/manuals/compose/ @aevesdocker
 
-/content/desktop/extensions/ @aevesdocker
+/content/manuals/desktop/ @aevesdocker
 
-/content/desktop/extensions-sdk/ @aevesdocker
+/content/manuals/extensions/ @aevesdocker
 
-/content/scout/ @dvdksn
+/content/manuals/extensions-sdk/ @aevesdocker
 
-/content/docker-hub/ @aevesdocker @craig-osterhout @stephaurelio
+/content/manuals/scout/ @craig-osterhout
 
-/content/engine/ @dvdksn
+/content/manuals/docker-hub/ @craig-osterhout
 
-/content/subscription/ @aevesdocker @stephaurelio
+/content/manuals/engine/ @dvdksn
 
-/content/docker-hub/publish/ @aevesdocker
+/content/reference/api/engine/ @dvdksn
 
-/content/docker-hub/official_images/ @aevesdocker
+/content/reference/cli/ @dvdksn
 
-/content/registry/ @dvdksn
+/content/manuals/subscription-billing/ @akristen
 
+/content/manuals/security/ @aevesdocker @akristen
+
+/content/manuals/admin/ @akristen
+
+/content/manuals/accounts/ @akristen
+
+/content/manuals/support/ @akristen
+
+/content/manuals/platform-release-notes.md @akristen
+
+/content/manuals/ai/ @dvdksn
+
+/content/manuals/ai/governance/ @craig-osterhout
+
+/content/reference/api/ai-governance/ @craig-osterhout
+
+/content/reference/api/ai-governance-audit-logs/ @craig-osterhout
+
+/_vendor @dvdksn
+
+/content/manuals/offload/ @aevesdocker
+
+/content/manuals/dhi/ @craig-osterhout

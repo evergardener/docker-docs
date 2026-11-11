@@ -1,0 +1,47 @@
+name: sbx mcp rm
+synopsis: Remove a registered MCP server
+description: |-
+    Remove a registered MCP server and its OAuth credential.
+
+    Use --registration-only to remove the local registration without starting the
+    daemon or accessing credentials. This also removes the registration's saved
+    environment ownership and approval, including damaged or orphaned registrations. Stored credentials are
+    kept, and MCP processes already running in sandbox gateways are not stopped.
+    For an untrusted registration, first stop the selected daemon; this interrupts
+    all of its sandbox gateways. A later approved env run can register a declared
+    server again. Use --sandbox to select an environment-owned registration.
+usage: sbx mcp rm NAME [flags]
+options:
+    - name: force
+      shorthand: f
+      default_value: "false"
+      usage: Skip confirmation prompts
+    - name: help
+      shorthand: h
+      default_value: "false"
+      usage: help for rm
+    - name: registration-only
+      default_value: "false"
+      usage: |
+        Remove only the local registration without starting the daemon; keep credentials and running MCP processes
+    - name: sandbox
+      usage: Owning sandbox (requires --registration-only)
+inherited_options:
+    - name: cloud
+      default_value: "false"
+      usage: |
+        Dispatch to Docker Cloud Sandboxes API instead of local sandboxd (supported by a growing set of verbs — run 'sbx --cloud --help' for the current list)
+    - name: debug
+      shorthand: D
+      default_value: "false"
+      usage: Enable debug logging
+    - name: no-input
+      default_value: "false"
+      usage: |
+        Never prompt; commands that need an answer fail with the command to run instead
+example: |4-
+      sbx mcp rm notion
+      sbx mcp rm --registration-only notion
+      sbx mcp rm --registration-only notion --sandbox my-sbx
+see_also:
+    - sbx mcp - Manage MCP servers

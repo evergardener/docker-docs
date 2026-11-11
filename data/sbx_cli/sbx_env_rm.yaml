@@ -1,0 +1,75 @@
+name: sbx env rm
+synopsis: Remove a sandbox environment and its scoped resources
+experimental: true
+description: |-
+    Remove the sandbox declared in sbxenv.yaml along with the
+    secret values provisioned at its sandbox scope (service, custom, and registry
+    credentials). Global credential bindings are left in place by default since
+    they are user-wide and may be shared with other sandboxes; pass
+    --prune-bindings to also remove the bindings this environment declares.
+
+    Each PATH may be a directory (the file is <PATH>/sbxenv.yaml) or the
+    path to the environment file itself. Passing more than one PATH deep-merges them
+    in order (docker-compose `-f` semantics), so the same set used to create the
+    environment resolves to the same sandbox on removal.
+
+    A directory PATH selects sbxenv.yaml; a file PATH selects that file.
+    With no PATH, ~/.sbxenv.yaml supplies shared defaults when present.
+    Explicit PATHs skip those defaults. Later files override earlier values.
+    Ports with the same sandbox port and effective protocol, MCP servers with the
+    same name, and additional workspaces with the same container target use the
+    later entry, including repeated entries in one file.
+    Kit arguments merge by source. The entrypoint and cmd arrays replace earlier
+    values; other lists concatenate.
+usage: sbx env rm [PATH...] [flags]
+options:
+    - name: env-arg
+      default_value: '[]'
+      experimental: true
+      usage: |
+        Value for an argument the environment file declares, as name=value (can be repeated)
+    - name: env-args-file
+      default_value: '[]'
+      experimental: true
+      usage: |
+        File of name=value environment arguments, one per line (can be repeated); --env-arg overrides
+    - name: force
+      shorthand: f
+      default_value: "false"
+      usage: |
+        Skip confirmation prompts and delete even if in use (e.g. an open SSH connection)
+    - name: help
+      shorthand: h
+      default_value: "false"
+      usage: help for rm
+    - name: name
+      usage: |
+        Name for the sandbox, overriding 'name:' in sbxenv.yaml and the derived <agent>-<directory> (every 'sbx env' command addressing this environment needs the same value)
+    - name: prune-bindings
+      default_value: "false"
+      usage: |
+        Also remove this environment's bindings from the global credentials.yaml
+    - name: skip-host-commands
+      default_value: "false"
+      usage: |
+        Skip host preRemove commands and disable owned host MCP commands; successful environment removal deletes their registrations
+inherited_options:
+    - name: cloud
+      default_value: "false"
+      usage: |
+        Dispatch to Docker Cloud Sandboxes API instead of local sandboxd (supported by a growing set of verbs — run 'sbx --cloud --help' for the current list)
+    - name: debug
+      shorthand: D
+      default_value: "false"
+      usage: Enable debug logging
+    - name: no-input
+      default_value: "false"
+      usage: |
+        Never prompt; commands that need an answer fail with the command to run instead
+example: |4-
+      sbx env rm
+
+      # Also remove the credential bindings the environment created
+      sbx env rm --force --prune-bindings ./project
+see_also:
+    - sbx env - (Experimental) Manage sandboxes declaratively from an sbxenv.yaml file

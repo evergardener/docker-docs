@@ -1,0 +1,73 @@
+name: sbx kit inspect
+synopsis: Show kit artifact details
+experimental: true
+description: |-
+    Load and display details about a kit artifact.
+
+    The reference can be a local directory, ZIP file path, OCI registry reference, or git repository.
+
+    Pass --kit-arg to preview how the kit resolves with a given set of
+    arguments; the output shows the substituted content.
+
+    --resolved merges the kit's extends: parent into it, so the output is what
+    sbx applies rather than only what the kit declares.
+
+    --offline skips the daemon-backed kit policy (kit.allowedSources,
+    kit.allowLocalKits, kit.requireSignature) so the command needs neither
+    sandboxd nor a signed-in session; it only accepts a local directory or
+    ZIP reference, since those are the only ones this check applies to.
+usage: sbx kit inspect REFERENCE [flags]
+options:
+    - name: format
+      usage: 'Output format: table, json or yaml'
+    - name: help
+      shorthand: h
+      default_value: "false"
+      usage: help for inspect
+    - name: json
+      default_value: "false"
+      usage: Output in JSON format
+    - name: kit-arg
+      default_value: '[]'
+      experimental: true
+      usage: |
+        Value for an argument the kit declares, as name=value for every kit or kit.name=value for one (can be repeated)
+    - name: kit-args-file
+      default_value: '[]'
+      experimental: true
+      usage: |
+        File of name=value kit arguments, one per line (can be repeated); --kit-arg overrides
+    - name: offline
+      default_value: "false"
+      usage: |
+        Skip the daemon-backed kit policy check; local directory or ZIP references only
+    - name: resolved
+      default_value: "false"
+      usage: 'Merge the kit''s extends: parent into the output'
+inherited_options:
+    - name: cloud
+      default_value: "false"
+      usage: |
+        Dispatch to Docker Cloud Sandboxes API instead of local sandboxd (supported by a growing set of verbs — run 'sbx --cloud --help' for the current list)
+    - name: debug
+      shorthand: D
+      default_value: "false"
+      usage: Enable debug logging
+    - name: no-input
+      default_value: "false"
+      usage: |
+        Never prompt; commands that need an answer fail with the command to run instead
+example: |4-
+      sbx kit inspect ./my-kit
+      sbx kit inspect ghcr.io/myorg/my-kit:1.0
+
+      # Machine-readable output
+      sbx kit inspect ghcr.io/myorg/my-kit:1.0 --format json
+
+      # Show the kit with its extends: parent merged in
+      sbx kit inspect ./my-kit --resolved --format yaml
+
+      # Inspect without sandboxd running or a Docker sign-in
+      sbx kit inspect ./my-kit --offline
+see_also:
+    - sbx kit - (Experimental) Manage kit artifacts

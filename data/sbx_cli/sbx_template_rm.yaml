@@ -1,0 +1,57 @@
+name: sbx template rm
+synopsis: Remove a template image
+description: |-
+    Remove a template image from the sandbox runtime's image store.
+
+    Identify the image by tag, repository digest (REPOSITORY@sha256:DIGEST),
+    or image ID (full or prefix). Use "sbx template ls --all --digests" to see
+    available images and their digests.
+
+    With --cloud:
+    Remove a cloud sandbox template by name or tmpl_* ID.
+    Use "sbx --cloud template ls" to list templates.
+usage: sbx template rm TAG|DIGEST|ID|NAME [flags]
+options:
+    - name: force
+      shorthand: f
+      default_value: "false"
+      usage: Skip confirmation prompts
+    - name: format
+      usage: 'Output format: table, json or yaml'
+    - name: help
+      shorthand: h
+      default_value: "false"
+      usage: help for rm
+    - name: json
+      default_value: "false"
+      usage: Output in JSON format
+inherited_options:
+    - name: cloud
+      default_value: "false"
+      usage: |
+        Dispatch to Docker Cloud Sandboxes API instead of local sandboxd (supported by a growing set of verbs — run 'sbx --cloud --help' for the current list)
+    - name: debug
+      shorthand: D
+      default_value: "false"
+      usage: Enable debug logging
+    - name: no-input
+      default_value: "false"
+      usage: |
+        Never prompt; commands that need an answer fail with the command to run instead
+example: |4-
+      # Remove by tag
+      sbx template rm myimage:v1.0
+
+      # Remove by image ID (prefix)
+      sbx template rm abc123
+
+      # Remove by repository digest
+      sbx template rm myimage@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+
+      # Cloud: remove by name
+      sbx --cloud template rm my-template
+
+      # Cloud: remove by tmpl_* id
+      sbx --cloud template rm tmpl_abc123
+see_also:
+    - sbx template - Manage sandbox templates

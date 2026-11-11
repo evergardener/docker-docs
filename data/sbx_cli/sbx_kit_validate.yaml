@@ -1,0 +1,65 @@
+name: sbx kit validate
+synopsis: Validate a kit artifact
+experimental: true
+description: |-
+    Validate that a directory or ZIP file is a valid kit artifact.
+
+    The reference can be a local directory, ZIP file path, or git repository.
+
+    A kit that declares required arguments is invalid until they are
+    supplied, so pass the same --kit-arg values you would pass to sbx
+    create.
+
+    --offline skips the daemon-backed kit policy (kit.allowedSources,
+    kit.allowLocalKits, kit.requireSignature) so the command needs neither
+    sandboxd nor a signed-in session; it only accepts a local directory or
+    ZIP reference, since those are the only ones this check applies to.
+usage: sbx kit validate REFERENCE [flags]
+options:
+    - name: format
+      usage: 'Output format: table, json or yaml'
+    - name: help
+      shorthand: h
+      default_value: "false"
+      usage: help for validate
+    - name: json
+      default_value: "false"
+      usage: Output in JSON format
+    - name: kit-arg
+      default_value: '[]'
+      experimental: true
+      usage: |
+        Value for an argument the kit declares, as name=value for every kit or kit.name=value for one (can be repeated)
+    - name: kit-args-file
+      default_value: '[]'
+      experimental: true
+      usage: |
+        File of name=value kit arguments, one per line (can be repeated); --kit-arg overrides
+    - name: offline
+      default_value: "false"
+      usage: |
+        Skip the daemon-backed kit policy check; local directory or ZIP references only
+inherited_options:
+    - name: cloud
+      default_value: "false"
+      usage: |
+        Dispatch to Docker Cloud Sandboxes API instead of local sandboxd (supported by a growing set of verbs — run 'sbx --cloud --help' for the current list)
+    - name: debug
+      shorthand: D
+      default_value: "false"
+      usage: Enable debug logging
+    - name: no-input
+      default_value: "false"
+      usage: |
+        Never prompt; commands that need an answer fail with the command to run instead
+example: |4-
+      sbx kit validate ./my-kit
+      sbx kit validate ./my-kit.zip
+
+      # Supply the arguments a kit declares
+      sbx kit validate ./my-kit --kit-arg region=eu
+
+      # Validate without sandboxd running or a Docker sign-in
+      sbx kit validate ./my-kit --offline
+see_also:
+    - sbx kit - (Experimental) Manage kit artifacts

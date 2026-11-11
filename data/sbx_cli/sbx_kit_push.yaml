@@ -1,0 +1,56 @@
+name: sbx kit push
+synopsis: Push a kit artifact to an OCI registry
+experimental: true
+description: |-
+    Package a kit directory containing spec.yaml and push it to an OCI registry.
+    Use a registry/repo:tag reference. The kit's schema selects the artifact format.
+
+    Every push attaches provenance. Use --sign to also sign the manifest and
+    provenance; signing is keyless unless --key is supplied.
+
+    For Docker Hub, the sbx login session takes priority. Other registries use
+    secrets set with sbx secret set --registry. Both fall back to Docker credentials.
+    The registry must support HTTPS.
+usage: sbx kit push DIRECTORY REFERENCE [flags]
+options:
+    - name: help
+      shorthand: h
+      default_value: "false"
+      usage: help for push
+    - name: identity-token
+      usage: |
+        OIDC identity token for keyless signing; defaults to the ambient CI provider, then an interactive browser login
+    - name: identity-token-file
+      usage: |
+        File holding the OIDC identity token; keeps it out of the process arguments
+    - name: key
+      usage: |
+        Private key for key-based signing (PEM); omit for keyless signing
+    - name: sign
+      default_value: "false"
+      usage: |
+        Sign the pushed kit and attach the signature as an OCI referrer
+    - name: tlog-upload
+      default_value: "true"
+      usage: |
+        Upload the keyless signature to the Rekor transparency log; set false for private kits
+inherited_options:
+    - name: cloud
+      default_value: "false"
+      usage: |
+        Dispatch to Docker Cloud Sandboxes API instead of local sandboxd (supported by a growing set of verbs — run 'sbx --cloud --help' for the current list)
+    - name: debug
+      shorthand: D
+      default_value: "false"
+      usage: Enable debug logging
+    - name: no-input
+      default_value: "false"
+      usage: |
+        Never prompt; commands that need an answer fail with the command to run instead
+example: |4-
+      sbx kit push ./my-kit ghcr.io/myorg/my-kit:1.0
+
+      # Sign the pushed kit (keyless)
+      sbx kit push ./my-kit ghcr.io/myorg/my-kit:1.0 --sign
+see_also:
+    - sbx kit - (Experimental) Manage kit artifacts

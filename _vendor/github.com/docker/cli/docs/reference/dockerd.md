@@ -18,17 +18,19 @@ aliases:
 # daemon
 
 ```markdown
-Usage: dockerd [OPTIONS]
+Usage:	dockerd [OPTIONS]
 
 A self-sufficient runtime for containers.
 
 Options:
       --add-runtime runtime                   Register an additional OCI compatible runtime (default [])
-      --allow-nondistributable-artifacts list Allow push of nondistributable artifacts to registry
-      --api-cors-header string                Set CORS headers in the Engine API
+      --allow-direct-routing                  Allow remote access to published ports on container IP addresses
+      --apparmor-profile string               Path to AppArmor profile template
       --authorization-plugin list             Authorization plugins to load
-      --bip string                            Specify network bridge IP
+      --bip string                            IPv4 address for the default bridge
+      --bip6 string                           IPv6 address for the default bridge
   -b, --bridge string                         Attach containers to a network bridge
+      --bridge-accept-fwmark string           In bridge networks, accept packets with this firewall mark/mask
       --cdi-spec-dir list                     CDI specification directories to use
       --cgroup-parent string                  Set parent cgroup for all containers
       --config-file string                    Daemon configuration file (default "/etc/docker/daemon.json")
@@ -44,12 +46,13 @@ Options:
   -D, --debug                                 Enable debug mode
       --default-address-pool pool-options     Default address pools for node specific local networks
       --default-cgroupns-mode string          Default mode for containers cgroup namespace ("host" | "private") (default "private")
-      --default-gateway ip                    Container default gateway IPv4 address
-      --default-gateway-v6 ip                 Container default gateway IPv6 address
+      --default-gateway ip                    Default gateway IPv4 address for the default bridge network
+      --default-gateway-v6 ip                 Default gateway IPv6 address for the default bridge network
       --default-ipc-mode string               Default mode for containers ipc ("shareable" | "private") (default "private")
       --default-network-opt mapmap            Default network options (default map[])
       --default-runtime string                Default OCI runtime for containers (default "runc")
       --default-shm-size bytes                Default shm size for containers (default 64MiB)
+      --default-stop-timeout int              Set the default container stop timeout in seconds (0 to terminate immediately) (default 10)
       --default-ulimit ulimit                 Default ulimits for containers (default [])
       --dns list                              DNS server to use
       --dns-opt list                          DNS options to use
@@ -57,45 +60,48 @@ Options:
       --exec-opt list                         Runtime execution options
       --exec-root string                      Root directory for execution state files (default "/var/run/docker")
       --experimental                          Enable experimental features
-      --fixed-cidr string                     IPv4 subnet for fixed IPs
-      --fixed-cidr-v6 string                  IPv6 subnet for fixed IPs
+      --feature map                           Enable feature in the daemon
+      --firewall-backend string               Firewall backend to use, iptables or nftables
+      --fixed-cidr string                     IPv4 subnet for the default bridge network
+      --fixed-cidr-v6 string                  IPv6 subnet for the default bridge network
   -G, --group string                          Group for the unix socket (default "docker")
       --help                                  Print usage
   -H, --host list                             Daemon socket(s) to connect to
-      --host-gateway-ip ip                    IP address that the special 'host-gateway' string in --add-host resolves to.
-                                              Defaults to the IP address of the default bridge
+      --host-gateway-ip list                  IP addresses that the special 'host-gateway' string in --add-host resolves to.
+                                              Defaults to the IP addresses of the default bridge
       --http-proxy string                     HTTP proxy URL to use for outgoing traffic
       --https-proxy string                    HTTPS proxy URL to use for outgoing traffic
-      --icc                                   Enable inter-container communication (default true)
+      --icc                                   Enable inter-container communication for the default bridge network (default true)
       --init                                  Run an init in the container to forward signals and reap processes
       --init-path string                      Path to the docker-init binary
       --insecure-registry list                Enable insecure registry communication
-      --ip ip                                 Default IP when binding container ports (default 0.0.0.0)
-      --ip-forward                            Enable net.ipv4.ip_forward (default true)
-      --ip-masq                               Enable IP masquerading (default true)
-      --ip6tables                             Enable addition of ip6tables rules (experimental)
+      --ip ip                                 Host IP for port publishing from the default bridge network (default 0.0.0.0)
+      --ip-forward                            Enable IP forwarding in system configuration (default true)
+      --ip-forward-no-drop                    Do not set the filter-FORWARD policy to DROP when enabling IP forwarding
+      --ip-masq                               Enable IP masquerading for the default bridge network (default true)
+      --ip6tables                             Enable addition of ip6tables rules (default true)
       --iptables                              Enable addition of iptables rules (default true)
-      --ipv6                                  Enable IPv6 networking
+      --ipv6                                  Enable IPv6 networking for the default bridge network
       --label list                            Set key=value labels to the daemon
       --live-restore                          Enable live restore of docker when containers are still running
       --log-driver string                     Default driver for container logs (default "json-file")
+      --log-format string                     Set the logging format ("text"|"json") (default "text")
   -l, --log-level string                      Set the logging level ("debug"|"info"|"warn"|"error"|"fatal") (default "info")
       --log-opt map                           Default log driver options for containers (default map[])
       --max-concurrent-downloads int          Set the max concurrent downloads (default 3)
       --max-concurrent-uploads int            Set the max concurrent uploads (default 5)
       --max-download-attempts int             Set the max download attempts for each pull (default 5)
       --metrics-addr string                   Set default address and port to serve the metrics api on
-      --mtu int                               Set the containers network MTU (default 1500)
+      --mtu int                               Set the MTU for the default "bridge" network (default 1500)
       --network-control-plane-mtu int         Network Control plane MTU (default 1500)
       --no-new-privileges                     Set no-new-privileges by default for new containers
       --no-proxy string                       Comma-separated list of hosts or IP addresses for which the proxy is skipped
       --node-generic-resource list            Advertise user-defined resource
-      --oom-score-adjust int                  Set the oom_score_adj for the daemon
   -p, --pidfile string                        Path to use for daemon PID file (default "/var/run/docker.pid")
       --raw-logs                              Full timestamps without ANSI coloring
       --registry-mirror list                  Preferred registry mirror
       --rootless                              Enable rootless mode; typically used with RootlessKit
-      --seccomp-profile string                Path to seccomp profile. Use "unconfined" to disable the default seccomp profile (default "builtin")
+      --seccomp-profile string                Path to seccomp profile. Set to "unconfined" to disable the default seccomp profile (default "builtin")
       --selinux-enabled                       Enable selinux support
       --shutdown-timeout int                  Set the default shutdown timeout (default 15)
   -s, --storage-driver string                 Storage driver to use
@@ -124,6 +130,7 @@ type `dockerd`.
 To run the daemon with debug output, use `dockerd --debug` or add `"debug": true`
 to [the `daemon.json` file](#daemon-configuration-file).
 
+> [!NOTE]
 > **Enabling experimental features**
 >
 > Enable experimental features by starting `dockerd` with the `--experimental`
@@ -133,16 +140,15 @@ to [the `daemon.json` file](#daemon-configuration-file).
 
 The following list of environment variables are supported by the `dockerd` daemon.
 Some of these environment variables are supported both by the Docker Daemon and
-the `docker` CLI. Refer to [Environment variables](https://docs.docker.com/engine/reference/commandline/cli/#environment-variables)
-in the CLI section to learn about environment variables supported by the
-`docker` CLI.
+the `docker` CLI. Refer to [Environment variables](https://docs.docker.com/reference/cli/docker/#environment-variables)
+to learn about environment variables supported by the `docker` CLI.
 
 | Variable            | Description                                                                                                                                                                             |
 | :------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `DOCKER_CERT_PATH`  | Location of your authentication keys. This variable is used both by the [`docker` CLI](https://docs.docker.com/engine/reference/commandline/cli/) and the `dockerd` daemon.             |
+| `DOCKER_CERT_PATH`  | Location of your authentication keys. This variable is used both by the [`docker` CLI](https://docs.docker.com/reference/cli/docker/) and the `dockerd` daemon.             |
 | `DOCKER_DRIVER`     | The storage driver to use.                                                                                                                                                              |
 | `DOCKER_RAMDISK`    | If set this disables `pivot_root`.                                                                                                                                                      |
-| `DOCKER_TLS_VERIFY` | When set Docker uses TLS and verifies the remote. This variable is used both by the [`docker` CLI](https://docs.docker.com/engine/reference/commandline/cli/) and the `dockerd` daemon. |
+| `DOCKER_TLS_VERIFY` | When set Docker uses TLS and verifies the remote. This variable is used both by the [`docker` CLI](https://docs.docker.com/reference/cli/docker/) and the `dockerd` daemon. |
 | `DOCKER_TMPDIR`     | Location for temporary files created by the daemon.                                                                                                                                     |
 | `HTTP_PROXY`        | Proxy URL for HTTP requests unless overridden by NoProxy. See the [Go specification](https://pkg.go.dev/golang.org/x/net/http/httpproxy#Config) for details.                            |
 | `HTTPS_PROXY`       | Proxy URL for HTTPS requests unless overridden by NoProxy. See the [Go specification](https://pkg.go.dev/golang.org/x/net/http/httpproxy#Config) for details.                           |
@@ -153,8 +159,7 @@ in the CLI section to learn about environment variables supported by the
 
 ### Proxy configuration
 
-> **Note**
->
+> [!NOTE]
 > Refer to the [Docker Desktop manual](https://docs.docker.com/desktop/networking/#httphttps-proxy-support)
 > if you are running [Docker Desktop](https://docs.docker.com/desktop/).
 
@@ -170,7 +175,7 @@ in three ways:
    options. (Docker Engine version 23.0 or later).
 
 The command-line and configuration file options take precedence over environment
-variables. Refer to [control and configure Docker with systemd](https://docs.docker.com/config/daemon/systemd/#httphttps-proxy)
+variables. Refer to [control and configure Docker with systemd](https://docs.docker.com/engine/daemon/proxy/)
 to set these environment variables on a host using `systemd`.
 
 ### Daemon socket option
@@ -192,8 +197,7 @@ interface using its IP address: `-H tcp://192.168.59.103:2375`. It is
 conventional to use port `2375` for un-encrypted, and port `2376` for encrypted
 communication with the daemon.
 
-> **Note**
->
+> [!NOTE]
 > If you're using an HTTPS encrypted socket, keep in mind that only
 > TLS version 1.0 and higher is supported. Protocols SSLv3 and below are not
 > supported for security reasons.
@@ -260,8 +264,7 @@ supported. If your key is protected with passphrase, you need to set up
 
 #### Bind Docker to another host/port or a Unix socket
 
-> **Warning**
->
+> [!WARNING]
 > Changing the default `docker` daemon binding to a TCP port or Unix `docker`
 > user group introduces security risks, as it may allow non-root users to gain
 > root access on the host. Make sure you control access to `docker`. If you are
@@ -333,7 +336,7 @@ drivers: `overlay2`, `fuse-overlayfs`, `btrfs`, and `zfs`.
 and is selected by default. Unless users have a strong reason to prefer another storage driver,
 `overlay2` should be used.
 
-You can find out more about storage drivers and how to select one in [Select a storage driver](https://docs.docker.com/storage/storagedriver/select-storage-driver/).
+You can find out more about storage drivers and how to select one in [Select a storage driver](https://docs.docker.com/engine/storage/drivers/select-storage-driver/).
 
 On Windows, the Docker daemon only supports the `windowsfilter` storage driver.
 
@@ -425,7 +428,7 @@ installed outside of `PATH`, must be registered with the daemon, either via the
 configuration file or using the `--add-runtime` command line flag.
 
 For examples on how to use other container runtimes, see
-[Alternative container runtimes](https://docs.docker.com/engine/alternative-runtimes/)
+[Alternative container runtimes](https://docs.docker.com/engine/daemon/alternative-runtimes/)
 
 ##### Configure runtimes using `daemon.json`
 
@@ -530,7 +533,7 @@ For example:
       "runtimeType": "io.containerd.runsc.v1",
       "options": {
         "TypeUrl": "io.containerd.runsc.v1.options",
-        "ConfigPath": "/etc/containerd/runsc.toml",
+        "ConfigPath": "/etc/containerd/runsc.toml"
       }
     }
   }
@@ -609,8 +612,8 @@ $ sudo dockerd --add-runtime <runtime>=<path>
 
 Defining runtime arguments via the command line is not supported.
 
-For an example configuration for a runc drop-in replacment, see
-[Alternative container runtimes > youki](https://docs.docker.com/engine/alternative-runtimes/#youki)
+For an example configuration for a runc drop-in replacement, see
+[Alternative container runtimes > youki](https://docs.docker.com/engine/daemon/alternative-runtimes/#youki)
 
 ##### Configure the default container runtime
 
@@ -689,35 +692,6 @@ To set the DNS search domain for all Docker containers, use:
 $ sudo dockerd --dns-search example.com
 ```
 
-### Allow push of non-distributable artifacts
-
-Some images (e.g., Windows base images) contain artifacts whose distribution is
-restricted by license. When these images are pushed to a registry, restricted
-artifacts are not included.
-
-To override this behavior for specific registries, use the
-`--allow-nondistributable-artifacts` option in one of the following forms:
-
-* `--allow-nondistributable-artifacts myregistry:5000` tells the Docker daemon
-  to push non-distributable artifacts to myregistry:5000.
-* `--allow-nondistributable-artifacts 10.1.0.0/16` tells the Docker daemon to
-  push non-distributable artifacts to all registries whose resolved IP address
-  is within the subnet described by the CIDR syntax.
-
-This option can be used multiple times.
-
-This option is useful when pushing images containing non-distributable artifacts
-to a registry on an air-gapped network so hosts on that network can pull the
-images without connecting to another server.
-
-> **Warning**
->
-> Non-distributable artifacts typically have restrictions on how
-> and where they can be distributed and shared. Only use this feature to push
-> artifacts to private registries and ensure that you are in compliance with
-> any terms that cover redistributing non-distributable artifacts.
-{ .warning }
-
 ### Insecure registries
 
 In this section, "registry" refers to a private registry, and `myregistry:5000`
@@ -784,7 +758,19 @@ Docker host's configuration:
 
 This only adds the proxy and authentication to the Docker daemon's requests.
 To use the proxy when building images and running containers, see
-[Configure Docker to use a proxy server](https://docs.docker.com/network/proxy/)
+[Configure Docker to use a proxy server](https://docs.docker.com/engine/cli/proxy/)
+
+### Default container stop timeout
+
+The `--default-stop-timeout` flag sets the number of seconds to wait for a
+container to stop when the container doesn't have a `--stop-timeout` configured.
+The default is `10` seconds on Linux and `30` seconds on Windows. A value of `0`
+doesn't wait before forcefully terminating the container. Negative values are
+invalid.
+
+You can also configure the timeout with the `default-stop-timeout` option in the
+[daemon configuration file](#daemon-configuration-file). You can reload this
+option without restarting the daemon.
 
 ### Default `ulimit` settings
 
@@ -821,6 +807,24 @@ allow the request for it to complete.
 For information about how to create an authorization plugin, refer to the
 [authorization plugin](https://docs.docker.com/engine/extend/plugins_authorization/) section.
 
+### Configure the default AppArmor profile
+
+The `--apparmor-profile` option sets the path to an AppArmor profile definition
+for Docker's default `docker-default` container profile. This option is only
+supported on Linux hosts. The file can be a static profile or a Go template.
+
+The equivalent `daemon.json` configuration is:
+
+```json
+{
+  "apparmor-profile": "/etc/docker/apparmor/docker-default"
+}
+```
+
+Restart the daemon to apply changes. For template values, safe file placement,
+security considerations, and verification, see
+[Customize the default AppArmor profile](https://docs.docker.com/engine/security/apparmor/#customize-the-default-profile).
+
 ### Daemon user namespace options
 
 The Linux kernel
@@ -840,60 +844,106 @@ For details about how to use this feature, as well as limitations, see
 
 The Docker daemon supports a special `host-gateway` value for the `--add-host`
 flag for the `docker run` and `docker build` commands. This value resolves to
-the host's gateway IP and lets containers connect to services running on the
+addresses on the host, so that containers can connect to services running on the
 host.
 
-By default, `host-gateway` resolves to the IP address of the default bridge.
+By default, `host-gateway` resolves to the IPv4 address of the default bridge,
+and its IPv6 address if it has one.
+
 You can configure this to resolve to a different IP using the `--host-gateway-ip`
 flag for the dockerd command line interface, or the `host-gateway-ip` key in
 the daemon configuration file.
 
+To supply both IPv4 and IPv6 addresses on the command line, use two
+`--host-gateway-ip` options.
+
+To supply addresses in the daemon configuration file, use `"host-gateway-ips"`
+with a JSON array, as shown below. For compatibility with older versions of the
+daemon, a single IP address can also be specified as a JSON string in option
+`"host-gateway-ip"`.
+
 ```console
 $ cat > /etc/docker/daemon.json
-{ "host-gateway-ip": "192.0.2.0" }
+{ "host-gateway-ips": ["192.0.2.1", "2001:db8::1111"]}
 $ sudo systemctl restart docker
 $ docker run -it --add-host host.docker.internal:host-gateway \
   busybox ping host.docker.internal 
-PING host.docker.internal (192.0.2.0): 56 data bytes
+PING host.docker.internal (192.0.2.1): 56 data bytes
+$ docker run -it --add-host host.docker.internal:host-gateway \
+  busybox ping -6 host.docker.internal
+PING host.docker.internal (2001:db8::1111): 56 data bytes
 ```
 
-### Enable CDI devices
-
-> **Note**
->
-> This is experimental feature and as such doesn't represent a stable API.
->
-> This feature isn't enabled by default. To this feature, set `features.cdi` to
-> `true` in the `daemon.json` configuration file.
+### Configure CDI devices
 
 Container Device Interface (CDI) is a
 [standardized](https://github.com/cncf-tags/container-device-interface/blob/main/SPEC.md)
 mechanism for container runtimes to create containers which are able to
 interact with third party devices.
 
+CDI is currently only supported for Linux containers and is enabled by default
+since Docker Engine 28.3.0.
+
 The Docker daemon supports running containers with CDI devices if the requested
 device specifications are available on the filesystem of the daemon.
 
-The default specification directors are:
+The default specification directories are:
 
 - `/etc/cdi/` for static CDI Specs
 - `/var/run/cdi` for generated CDI Specs
 
-Alternatively, you can set custom locations for CDI specifications using the
+#### Set custom locations
+
+To set custom locations for CDI specifications, use the
 `cdi-spec-dirs` option in the `daemon.json` configuration file, or the
-`--cdi-spec-dir` flag for the `dockerd` CLI.
+`--cdi-spec-dir` flag for the `dockerd` CLI:
 
 ```json
 {
-  "features": {
-     "cdi": true
-  },
   "cdi-spec-dirs": ["/etc/cdi/", "/var/run/cdi"]
 }
 ```
 
-When CDI is enabled for a daemon, you can view the configured CDI specification
-directories using the `docker info` command.
+You can view the configured CDI specification directories using the `docker info` command.
+
+#### Disable CDI devices
+
+The feature in enabled by default. To disable it, use the `cdi` options in the `daemon.json` file:
+
+```json
+"features": {
+  "cdi": false
+},
+```
+
+To check the status of the CDI devices, run `docker info`.
+
+#### Daemon logging format {#log-format}
+
+The `--log-format` option or "log-format" option in the [daemon configuration file](#daemon-configuration-file)
+lets you set the format for logs produced by the daemon. The logging format should
+only be configured either through the `--log-format` command line option or
+through the "log-format" field in the configuration file; using both
+the command-line option and the "log-format" field in the configuration
+file produces an error. If this option is not set, the default is "text".
+
+The following example configures the daemon through the `--log-format` command
+line option to use `json` formatted logs;
+
+```console
+$ dockerd --log-format=json
+# ...
+{"level":"info","msg":"API listen on /var/run/docker.sock","time":"2024-09-16T11:06:08.558145428Z"}
+```
+
+The following example shows a `daemon.json` configuration file with the
+"log-format" set;
+
+```json
+{
+  "log-format": "json"
+}
+```
 
 ### Miscellaneous options
 
@@ -940,8 +990,6 @@ the `--cgroup-parent` option on the daemon.
 #### Daemon metrics
 
 The `--metrics-addr` option takes a TCP address to serve the metrics API.
-This feature is still experimental, therefore, the daemon must be running in experimental
-mode for this feature to work.
 
 To serve the metrics API on `localhost:9323` you would specify `--metrics-addr 127.0.0.1:9323`,
 allowing you to make requests on the API at `127.0.0.1:9323/metrics` to receive metrics in the
@@ -953,7 +1001,7 @@ to avoid collisions with other Prometheus exporters and services.
 
 If you are running a Prometheus server you can add this address to your scrape configs
 to have Prometheus collect metrics on Docker. For more information, see
-[Collect Docker metrics with Prometheus](https://docs.docker.com/config/daemon/prometheus/).
+[Collect Docker metrics with Prometheus](https://docs.docker.com/engine/daemon/prometheus/).
 
 #### Node generic resources
 
@@ -973,6 +1021,36 @@ Example of usage:
     "NVIDIA-GPU=UUID1",
     "NVIDIA-GPU=UUID2"
   ]
+}
+```
+
+### Enable feature in the daemon (--feature) {#feature}
+
+The `--feature` option lets you enable or disable a feature in the daemon.
+This option corresponds with the "features" field in the [daemon.json configuration file](#daemon-configuration-file).
+Features should only be configured either through the `--feature` command line
+option or through the "features" field in the configuration file; using both
+the command-line option and the "features" field in the configuration
+file produces an error. The feature option can be specified multiple times
+to configure multiple features. The `--feature` option accepts a name and
+optional boolean value. When omitting the value, the default is `true`.
+
+The following example runs the daemon with the `cdi` and `containerd-snapshotter`
+features enabled. The `cdi` option is provided with a value;
+
+```console
+$ dockerd --feature cdi=true --feature containerd-snapshotter
+```
+
+The following example is the equivalent using the `daemon.json` configuration
+file;
+
+```json
+{
+  "features": {
+    "cdi": true,
+    "containerd-snapshotter": true
+  }
 }
 ```
 
@@ -1011,27 +1089,29 @@ $ echo $?
 
 ##### On Linux
 
-The default location of the configuration file on Linux is
-`/etc/docker/daemon.json`. Use the `--config-file` flag to specify a
-non-default location.
+The default location of the configuration file on Linux is `/etc/docker/daemon.json`.
+If the file does not exist, you need to create it first. Use the `--config-file`
+flag to specify a non-default location.
 
 The following is a full example of the allowed configuration options on Linux:
 
 ```json
 {
-  "allow-nondistributable-artifacts": [],
-  "api-cors-header": "",
+  "allow-direct-routing": false,
+  "apparmor-profile": "",
   "authorization-plugins": [],
   "bip": "",
+  "bip6": "",
   "bridge": "",
+  "bridge-accept-fwmark": "",
   "builder": {
     "gc": {
       "enabled": true,
-      "defaultKeepStorage": "10GB",
+      "defaultReservedSpace": "10GB",
       "policy": [
-        { "keepStorage": "10GB", "filter": ["unused-for=2200h"] },
-        { "keepStorage": "50GB", "filter": ["unused-for=3300h"] },
-        { "keepStorage": "100GB", "all": true }
+        { "maxUsedSpace": "512MB", "keepDuration": "48h", "filter": [ "type=source.local" ] },
+        { "reservedSpace": "10GB", "maxUsedSpace": "100GB", "keepDuration": "1440h" },
+        { "reservedSpace": "50GB", "minFreeSpace": "20GB", "maxUsedSpace": "200GB", "all": true }
       ]
     }
   },
@@ -1057,6 +1137,7 @@ The following is a full example of the allowed configuration options on Linux:
   "default-network-opts": {},
   "default-runtime": "runc",
   "default-shm-size": "64M",
+  "default-stop-timeout": 10,
   "default-ulimits": {
     "nofile": {
       "Hard": 64000,
@@ -1070,7 +1151,11 @@ The following is a full example of the allowed configuration options on Linux:
   "exec-opts": [],
   "exec-root": "",
   "experimental": false,
-  "features": {},
+  "features": {
+    "cdi": true,
+    "containerd-snapshotter": true
+  },
+  "firewall-backend": "",
   "fixed-cidr": "",
   "fixed-cidr-v6": "",
   "group": "",
@@ -1094,6 +1179,7 @@ The following is a full example of the allowed configuration options on Linux:
   "labels": [],
   "live-restore": true,
   "log-driver": "json-file",
+  "log-format": "text",
   "log-level": "",
   "log-opts": {
     "cache-disabled": "false",
@@ -1114,7 +1200,6 @@ The following is a full example of the allowed configuration options on Linux:
     "NVIDIA-GPU=UUID1",
     "NVIDIA-GPU=UUID2"
   ],
-  "oom-score-adjust": 0,
   "pidfile": "",
   "raw-logs": false,
   "registry-mirrors": [],
@@ -1146,26 +1231,25 @@ The following is a full example of the allowed configuration options on Linux:
 }
 ```
 
-> **Note**
->
+> [!NOTE]
 > You can't set options in `daemon.json` that have already been set on
 > daemon startup as a flag.
 > On systems that use systemd to start the Docker daemon, `-H` is already set, so
 > you can't use the `hosts` key in `daemon.json` to add listening addresses.
-> See [custom Docker daemon options](https://docs.docker.com/config/daemon/systemd/#custom-docker-daemon-options)
+> See [custom Docker daemon options](https://docs.docker.com/engine/daemon/proxy/#systemd-unit-file)
 > for an example on how to configure the daemon using systemd drop-in files.
 
 ##### On Windows
 
 The default location of the configuration file on Windows is
-`%programdata%\docker\config\daemon.json`. Use the `--config-file` flag
-to specify a non-default location.
+`%programdata%\docker\config\daemon.json`. If the file does not exist, you need
+to create it first. Use the `--config-file` flag to specify a non-default
+location.
 
 The following is a full example of the allowed configuration options on Windows:
 
 ```json
 {
-  "allow-nondistributable-artifacts": [],
   "authorization-plugins": [],
   "bridge": "",
   "containerd": "\\\\.\\pipe\\containerd-containerd",
@@ -1175,6 +1259,7 @@ The following is a full example of the allowed configuration options on Windows:
   "debug": true,
   "default-network-opts": {},
   "default-runtime": "",
+  "default-stop-timeout": 30,
   "default-ulimits": {},
   "dns": [],
   "dns-opts": [],
@@ -1189,6 +1274,7 @@ The following is a full example of the allowed configuration options on Windows:
   "insecure-registries": [],
   "labels": [],
   "log-driver": "",
+  "log-format": "text",
   "log-level": "",
   "max-concurrent-downloads": 3,
   "max-concurrent-uploads": 5,
@@ -1235,7 +1321,7 @@ The list of feature options include:
 - `containerd-snapshotter`: when set to `true`, the daemon uses containerd
   snapshotters instead of the classic storage drivers for storing image and
   container data. For more information, see
-  [containerd storage](https://docs.docker.com/storage/containerd/).
+  [containerd storage](https://docs.docker.com/engine/storage/containerd/).
 - `windows-dns-proxy`: when set to `true`, the daemon's internal DNS resolver
   will forward requests to external servers. Without this, most applications
   running in the container will still be able to use secondary DNS servers
@@ -1243,7 +1329,7 @@ The list of feature options include:
   external names. The current default is `false`, it will change to `true` in
   a future release. This option is only allowed on Windows.
 
-  > **Warning**
+  > [!WARNING]
   > The `windows-dns-proxy` feature flag will be removed in a future release.
 
 #### Configuration reload behavior
@@ -1261,14 +1347,14 @@ The list of currently supported options that can be reconfigured is this:
 | ---------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | `debug`                            | Toggles debug mode of the daemon.                                                                           |
 | `labels`                           | Replaces the daemon labels with a new set of labels.                                                        |
-| `live-restore`                     | Toggles [live restore](https://docs.docker.com/config/containers/live-restore/).                            |
+| `live-restore`                     | Toggles [live restore](https://docs.docker.com/engine/daemon/live-restore/).                                |
 | `max-concurrent-downloads`         | Configures the max concurrent downloads for each pull.                                                      |
 | `max-concurrent-uploads`           | Configures the max concurrent uploads for each push.                                                        |
 | `max-download-attempts`            | Configures the max download attempts for each pull.                                                         |
 | `default-runtime`                  | Configures the runtime to be used if not is specified at container creation.                                |
+| `default-stop-timeout`             | Configures the timeout for stopping containers that have no container-specific timeout.                     |
 | `runtimes`                         | Configures the list of available OCI runtimes that can be used to run containers.                           |
 | `authorization-plugin`             | Specifies the authorization plugins to use.                                                                 |
-| `allow-nondistributable-artifacts` | Specifies a list of registries to which the daemon will push non-distributable artifacts.                   |
 | `insecure-registries`              | Specifies a list of registries that the daemon should consider insecure.                                    |
 | `registry-mirrors`                 | Specifies a list of registry mirrors.                                                                       |
 | `shutdown-timeout`                 | Configures the daemon's existing configuration timeout with a new timeout for shutting down all containers. |
@@ -1276,8 +1362,7 @@ The list of currently supported options that can be reconfigured is this:
 
 ### Run multiple daemons
 
-> **Note**
->
+> [!NOTE]
 > Running multiple daemons on a single host is considered experimental.
 > You may encounter unsolved problems, and things may not work as expected in some cases.
 
@@ -1363,7 +1448,7 @@ using the `daemon.json` file.
 ```
 
 This example uses the `bridge` network driver. Refer to the
-[bridge network driver page](https://docs.docker.com/network/drivers/bridge/#options)
+[bridge network driver page](https://docs.docker.com/engine/network/drivers/bridge/#options)
 for an overview of available driver options.
 
 After changing the configuration and restarting the daemon, new networks that

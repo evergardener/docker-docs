@@ -1,0 +1,36 @@
+name: sbx kit pack
+synopsis: Package a directory as a kit artifact
+experimental: true
+description: |-
+    Validate and package a kit artifact directory as a ZIP file.
+
+    The directory must contain a valid spec.yaml and an optional files/ directory.
+usage: sbx kit pack DIRECTORY [flags]
+options:
+    - name: help
+      shorthand: h
+      default_value: "false"
+      usage: help for pack
+    - name: output
+      shorthand: o
+      usage: 'Output file path; must end in .zip (default: <name>.zip)'
+inherited_options:
+    - name: cloud
+      default_value: "false"
+      usage: |
+        Dispatch to Docker Cloud Sandboxes API instead of local sandboxd (supported by a growing set of verbs — run 'sbx --cloud --help' for the current list)
+    - name: debug
+      shorthand: D
+      default_value: "false"
+      usage: Enable debug logging
+    - name: no-input
+      default_value: "false"
+      usage: |
+        Never prompt; commands that need an answer fail with the command to run instead
+example: |4-
+      sbx kit pack ./my-kit
+
+      # Choose the archive name
+      sbx kit pack ./my-kit --output dist/my-kit.zip
+see_also:
+    - sbx kit - (Experimental) Manage kit artifacts

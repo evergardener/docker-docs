@@ -1,0 +1,76 @@
+{
+  "apis": [
+    {
+      "id": "hub",
+      "product": "hub",
+      "title": "Docker Hub",
+      "source": "content/reference/api/hub/latest.yaml",
+      "owner": "docker/docs",
+      "manual": "/manuals/docker-hub/",
+      "connection": "hosted",
+      "guides": ["/manuals/security/provisioning/scim/provision-scim.md"]
+    },
+    {
+      "id": "dvp",
+      "product": "dvp",
+      "title": "Publisher analytics",
+      "source": "content/reference/api/dvp/latest.yaml",
+      "owner": "docker/docs",
+      "manual": "/manuals/docker-hub/repos/manage/trusted-content/insights-analytics.md",
+      "connection": "hosted",
+      "guides": []
+    },
+    {
+      "id": "registry",
+      "product": "registry",
+      "title": "Registry",
+      "source": "content/reference/api/registry/latest.yaml",
+      "owner": "docker/docs",
+      "manual": "/manuals/docker-hub/repos/",
+      "connection": "hosted",
+      "guides": ["/reference/api/registry/auth.md"]
+    },
+    {
+      "id": "ai-governance",
+      "product": "ai-governance",
+      "title": "AI Governance",
+      "source": "content/reference/api/ai-governance/api.yaml",
+      "owner": "docker/governor-services",
+      "manual": "/manuals/ai/governance/organization/policies/",
+      "connection": "hosted",
+      "guides": []
+    },
+    {
+      "id": "ai-governance-audit-logs",
+      "product": "ai-governance-audit-logs",
+      "title": "AI Governance Audit Logs",
+      "source": "content/reference/api/ai-governance-audit-logs/api.yaml",
+      "owner": "docker/docs",
+      "manual": "/manuals/ai/governance/organization/audit/",
+      "connection": "hosted",
+      "guides": ["/manuals/ai/governance/organization/audit/api.md"]
+    },
+    {
+      "id": "sandboxes",
+      "product": "sandboxes",
+      "title": "Docker Sandboxes",
+      "source": "content/reference/api/sandboxes/api.yaml",
+      "owner": "docker/sbx-api",
+      "manual": "/manuals/ai/sandboxes-api/",
+      "connection": "hosted",
+      "experimental": true,
+      "guides": [
+        "/manuals/ai/sandboxes-api/authentication.md",
+        "/manuals/ai/sandboxes-api/get-started.md"
+      ]
+    }
+  ],
+  "legacyAPIs": [
+    {
+      "title": "Docker Engine",
+      "url": "/reference/api/engine/",
+      "connection": "unix",
+      "description": "Manage containers, images, networks, and volumes."
+    }
+  ]
+}
